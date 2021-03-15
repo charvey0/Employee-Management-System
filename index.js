@@ -24,10 +24,10 @@ const action = () => {
                 create();
                 break;
             case '[UPDATE]':
-//                update();
+                update();
                 break;
             case '[VIEW]':
-//                view();
+                view();
                 break;
             case '[DELETE]':
                 del();
@@ -39,23 +39,25 @@ const action = () => {
 };
 
 
+////////////////////////////////  CREATE /////////////////////
+
 const create = () => {
     inquirer
     .prompt({
       name: 'create',
       type: 'list',
       message: 'What would you like to create?',
-      choices: ['Create a new employee', 'Create a new role', 'Create a new department', 'Go back to the main menu'],
+      choices: ['[EMPLOYEE]', '[ROLE]', '[DEPARTMENT]', 'Go back to the main menu'],
     })
     .then((ans) => {
         switch (ans.create) {
-            case 'Create a new employee':
+            case '[EMPLOYEE]':
                 createEmployee();
                 break;
-            case 'Create a new role':
+            case '[ROLE]':
                 createRole();
                 break;
-            case 'Create a new department':
+            case '[DEPARTMENT]':
                 createDepartment();
                 break;
             default:
@@ -75,7 +77,13 @@ const createEmployee = () => {
       {
         name: 'last_name',
         type: 'input',
-        message: "What is the employee's first name?",
+        message: "What is the employee's last name?",
+      },
+      {
+        name: 'is_manager',
+        type: 'list',
+        message: "Is the employee a manager? (1='Yes'; 0='NO')",
+        choices: ["1","0"]
       },
       {
         name: 'role_id',
@@ -94,6 +102,7 @@ const createEmployee = () => {
         {
           first_name: answer.first_name,
           last_name: answer.last_name,
+          is_manager: answer.is_manager || null,
           role_id: answer.role_id || null,
           manager_id: answer.manager_id || null,
         },
@@ -178,8 +187,7 @@ const createDepartment = () => {
 
 
 
-
-
+////////////////////////////////  DELETE /////////////////////
 
 const del = () => {
     inquirer
@@ -187,17 +195,17 @@ const del = () => {
       name: 'create',
       type: 'list',
       message: 'What would you like to delete?',
-      choices: ['Delete an employee', 'Delete a role', 'Delete a department', 'Go back to the main menu'],
+      choices: ['[EMPLOYEE]', '[ROLE]', '[DEPARTMENT]', 'Go back to the main menu'],
     })
     .then((ans) => {
         switch (ans.create) {
-            case 'Delete an employee':
+            case '[EMPLOYEE]':
                 deleteEmployee();
                 break;
-            case 'Delete a role':
+            case '[ROLE]':
                 deleteRole();
                 break;
-            case 'Delete a department':
+            case '[DEPARTMENT]':
                 deleteDepartment();
                 break;
             default:
@@ -283,6 +291,373 @@ const deleteDepartment = () => {
 
 
 
+////////////////////////////////  UPDATE  /////////////////////
+
+const update = () => {
+    inquirer
+    .prompt({
+      name: 'update',
+      type: 'list',
+      message: 'What would you like to update?',
+      choices: ['[EMPLOYEE]', '[ROLE]', '[DEPARTMENT]', 'Go back to the main menu'],
+    })
+    .then((ans) => {
+        switch (ans.update) {
+            case '[EMPLOYEE]':
+                updateEmployee();
+                break;
+            case '[ROLE]':
+                updateRole();
+                break;
+            case '[DEPARTMENT]':
+                updateDepartment();
+                break;
+            default:
+                action();
+        }
+    });
+};
+
+
+/////////////////////////////////////// UPDATE Employee  ////////////////
+const updateEmployee = () => {
+    inquirer
+    .prompt([
+      {
+        name: 'id',
+        type: 'input',
+        message: "What is the id of the employee to be edited?",
+      }
+    ])
+    .then((answer) => {
+        updateEmployeeMenu(answer.id);
+    });
+};
+
+const updateEmployeeMenu = (id) => {
+    inquirer
+    .prompt({
+      name: 'update',
+      type: 'list',
+      message: 'What would you like to update?',
+      choices: ['[FIRST NAME]', '[LAST NAME]', '[IS_MANAGER?]', '[ROLE ID]', '[MANAGER ID]', 'Go back to the main menu'],
+    })
+    .then((ans) => {
+        switch (ans.update) {
+            case '[FIRST NAME]':
+                updateEmployeeFirstName(id);
+                break;
+            case '[LAST NAME]':
+                updateEmployeeLastName(id);
+                break;
+            case '[IS_MANAGER?]':
+                updateEmployeeIsManager(id);
+                break;
+            case '[ROLE ID]':
+                updateEmployeeRole(id);
+                break;
+            case '[MANAGER ID]':
+                updateEmployeeManager(id);
+                break;
+            default:
+                action();
+        }
+    });
+};
+
+const updateEmployeeFirstName = (id) => {
+    inquirer
+    .prompt([
+      {
+        name: 'first_name',
+        type: 'input',
+        message: "What is the employee's first name?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE employee SET ? WHERE ?',
+        [{  first_name: answer.first_name }, 
+         { id: id }],
+        (err) => {
+          if (err) throw err;
+          console.log("The employee's first name was successfully updated.");
+          updateEmployeeMenu(id);
+        }
+      );
+    });
+};
+
+const updateEmployeeLastName = (id) => {
+    inquirer
+    .prompt([
+      {
+        name: 'last_name',
+        type: 'input',
+        message: "What is the employee's last name?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE employee SET ? WHERE ?',
+        [{  last_name: answer.last_name }, 
+         { id: id }],
+        (err) => {
+          if (err) throw err;
+          console.log("The employee's last name was successfully updated.");
+          updateEmployeeMenu(id);
+        }
+      );
+    });
+};
+
+const updateEmployeeIsManager = (id) => {
+    inquirer
+    .prompt([
+      {
+        name: 'is_manager',
+        type: 'input',
+        message: "Is the employee a manager? (1='YES'; 0='NO')",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE employee SET ? WHERE ?',
+        [{  is_manager: answer.is_manager }, 
+         { id: id }],
+        (err) => {
+          if (err) throw err;
+          console.log("The employee's manager flag was successfully updated.");
+          updateEmployeeMenu(id);
+        }
+      );
+    });
+};
+
+const updateEmployeeRole = (id) => {
+    inquirer
+    .prompt([
+      {
+        name: 'role_id',
+        type: 'input',
+        message: "What is the employee's role id?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE employee SET ? WHERE ?',
+        [{  role_id: answer.role_id }, 
+         { id: id }],
+        (err) => {
+          if (err) throw err;
+          console.log("The employee's role id was successfully updated.");
+          updateEmployeeMenu(id);
+        }
+      );
+    });
+};
+
+const updateEmployeeManager = (id) => {
+    inquirer
+    .prompt([
+      {
+        name: 'manager_id',
+        type: 'input',
+        message: "What is the employee's manager id?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE employee SET ? WHERE ?',
+        [{  manager_id: answer.manager_id }, 
+         { id: id }],
+        (err) => {
+          if (err) throw err;
+          console.log("The employee's manager id was successfully updated.");
+          updateEmployeeMenu(id);
+        }
+      );
+    });
+};
+
+
+
+/////////////////////////////////////// UPDATE Role  ////////////////
+
+const updateRole = () => {
+    inquirer
+    .prompt([
+      {
+        name: 'id',
+        type: 'input',
+        message: "What is the id of the role to be edited?",
+      }
+    ])
+    .then((answer) => {
+        updateRoleMenu(answer.id);
+    });
+};
+
+
+const updateRoleMenu = (id) => {
+    inquirer
+    .prompt({
+      name: 'update',
+      type: 'list',
+      message: 'What would you like to update?',
+      choices: ['[TITLE]', '[SALARY]', '[IS_MANAGEMENT]', '[DEPARTMENT ID]', 'Go back to the main menu'],
+    })
+    .then((ans) => {
+        switch (ans.update) {
+            case '[TITLE]':
+                updateRoleTitle(id);
+                break;
+            case '[SALARY]':
+                updateRoleSalary(id);
+                break;
+            case '[IS_MANAGEMENT]':
+                updateRoleIsManagement(id);
+                break;
+            case '[DEPARTMENT ID]':
+                updateRoleDepartment(id);
+                break;
+            default:
+                action();
+        }
+    });
+};
+
+
+const updateRoleTitle = (id) => {
+    inquirer
+    .prompt([
+      {
+        name: 'title',
+        type: 'input',
+        message: "What is the role's new title?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE role SET ? WHERE ?',
+        [{  title: answer.title }, 
+         { id: id }],
+        (err) => {
+          if (err) throw err;
+          console.log("The role's title was successfully updated.");
+          updateRoleMenu(id);
+        }
+      );
+    });
+};
+
+const updateRoleSalary = (id) => {
+    inquirer
+    .prompt([
+      {
+        name: 'salary',
+        type: 'input',
+        message: "What is the role's new salary?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE role SET ? WHERE ?',
+        [{  salary: answer.salary }, 
+         { id: id }],
+        (err) => {
+          if (err) throw err;
+          console.log("The role's salary was successfully updated.");
+          updateRoleMenu(id);
+        }
+      );
+    });
+};
+
+const updateRoleIsManagement = (id) => {
+    inquirer
+    .prompt([
+      {
+        name: 'is_management',
+        type: 'list',
+        message: "Is this role a management role? (1=YES; 0=NO)",
+        choices: ["1","0"]
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE role SET ? WHERE ?',
+        [{  is_management: answer.is_management }, 
+         { id: id }],
+        (err) => {
+          if (err) throw err;
+          console.log("The role's management flag was successfully updated.");
+          updateRoleMenu(id);
+        }
+      );
+    });
+};
+
+
+const updateRoleDepartment = (id) => {
+    inquirer
+    .prompt([
+      {
+        name: 'department_id',
+        type: 'input',
+        message: "What is the role's department id?"
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE role SET ? WHERE ?',
+        [{  department_id: answer.department_id }, 
+         { id: id }],
+        (err) => {
+          if (err) throw err;
+          console.log("The role's department id was successfully updated.");
+          updateRoleMenu(id);
+        }
+      );
+    });
+};
+
+
+
+
+/////////////////////////////////////// UPDATE Department  ////////////////
+
+const updateDepartment = () => {
+    inquirer
+    .prompt([
+      {
+        name: 'old_name',
+        type: 'input',
+        message: "What is the current name of the department?",
+      },
+      {
+        name: 'new_name',
+        type: 'input',
+        message: "What is the new name of the department?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'UPDATE department SET ? WHERE ?',
+        [{  name: answer.new_name }, 
+         { name: answer.old_name }],
+        (err) => {
+          if (err) throw err;
+          console.log('The department was successfully updated.');
+          action();
+        }
+      );
+    });
+};
+
+
+
+/////////////////////////////////////////////////////////////////////////
 connection.connect((err) => {
   if (err) throw err;
   action();
