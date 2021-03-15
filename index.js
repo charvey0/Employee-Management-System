@@ -30,7 +30,7 @@ const action = () => {
 //                view();
                 break;
             case '[DELETE]':
-//                del();
+                del();
                 break;
             default:
                 connection.end();
@@ -175,6 +175,111 @@ const createDepartment = () => {
       );
     });
 };
+
+
+
+
+
+
+const del = () => {
+    inquirer
+    .prompt({
+      name: 'create',
+      type: 'list',
+      message: 'What would you like to delete?',
+      choices: ['Delete an employee', 'Delete a role', 'Delete a department', 'Go back to the main menu'],
+    })
+    .then((ans) => {
+        switch (ans.create) {
+            case 'Delete an employee':
+                deleteEmployee();
+                break;
+            case 'Delete a role':
+                deleteRole();
+                break;
+            case 'Delete a department':
+                deleteDepartment();
+                break;
+            default:
+                action();
+        }
+    });
+};
+
+const deleteEmployee = () => {
+    inquirer
+    .prompt([
+      {
+        name: 'id',
+        type: 'input',
+        message: "What is the employee's id?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'DELETE FROM Employee WHERE ?',
+        {
+          id: answer.id
+        },
+        (err) => {
+          if (err) throw err;
+          console.log('Your employee was successfully deleted.');
+          action();
+        }
+      );
+    });
+};
+
+
+const deleteRole = () => {
+    inquirer
+    .prompt([
+      {
+        name: 'id',
+        type: 'input',
+        message: "What is the role's id?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'DELETE FROM Role WHERE ?',
+        {
+          id: answer.id
+        },
+        (err) => {
+          if (err) throw err;
+          console.log('Your role was successfully deleted.');
+          action();
+        }
+      );
+    });
+};
+
+
+const deleteDepartment = () => {
+    inquirer
+    .prompt([
+      {
+        name: 'id',
+        type: 'input',
+        message: "What is the department's id?",
+      }
+    ])
+    .then((answer) => {
+      connection.query(
+        'DELETE FROM Department WHERE ?',
+        {
+          id: answer.id
+        },
+        (err) => {
+          if (err) throw err;
+          console.log('Your department was successfully deleted.');
+          action();
+        }
+      );
+    });
+};
+
 
 
 
