@@ -20,7 +20,6 @@ const action = () => {
     .then((ans) => {
         switch (ans.action) {
             case '[CREATE]':
-                console.log("create called");
                 create();
                 break;
             case '[UPDATE]':
@@ -655,6 +654,157 @@ const updateDepartment = () => {
     });
 };
 
+
+
+
+////////////////////////////////  VIEW  /////////////////////
+
+const view = () => {
+    inquirer
+    .prompt({
+      name: 'view',
+      type: 'list',
+      message: 'What would you like to view?',
+      choices: ['[EMPLOYEES]', '[ROLE]', '[DEPARTMENT]', 'Go back to the main menu'],
+    })
+    .then((ans) => {
+        switch (ans.view) {
+            case '[EMPLOYEES]':
+                viewEmployees();
+                break;
+            case '[ROLE]':
+                viewRole();
+                break;
+            case '[DEPARTMENT]':
+                viewDepartment();
+                break;
+            default:
+                action();
+        }
+    });
+};
+
+
+/////////////////////////////////////// VIEW Employee  ////////////////
+const viewEmployees = () => {
+    inquirer
+    .prompt({
+      name: 'mode',
+      type: 'list',
+      message: 'How would you like to view the employees?',
+      choices: ['[BY DEPARTMENT]', '[BY MANAGER]', '[BY LAST NAME]', 'Go back to the main menu'],
+    })
+    .then((ans) => {
+        switch (ans.mode) {
+            case '[BY DEPARTMENT]':
+                viewEmployeeByDepartment();
+                break;
+            case '[BY MANAGER]':
+                viewEmployeeByManager();
+                break;
+            case '[BY LAST NAME]':
+                viewEmployeeByLastName();
+                break;
+            default:
+                action();
+        }
+    });
+};
+
+const viewEmployeeByDepartment = () => {
+//    connection.query(
+// need a more robust search if I am going to list all employees 
+//        'SELECT * FROM employee',
+//            {  id: answer.id }, 
+//            (err) => {
+//              if (err) throw err;
+//TODO print results
+// role title, salary, department, all employees in that role and the combined salary
+view();
+//            }
+//          );
+};
+
+const viewEmployeeByManager = () => {
+//    connection.query(
+// need a more robust search if I am going to list all employees 
+//        'SELECT * FROM employee',
+//            {  id: answer.id }, 
+//            (err) => {
+//              if (err) throw err;
+//TODO print results
+// role title, salary, department, all employees in that role and the combined salary
+view();
+//            }
+//          );
+};
+
+const viewEmployeeByLastName = () => {
+//    connection.query(
+// need a more robust search if I am going to list all employees 
+//        'SELECT * FROM employee',
+//            {  id: answer.id }, 
+//            (err) => {
+//              if (err) throw err;
+//TODO print results
+// role title, salary, department, all employees in that role and the combined salary
+              view();
+//            }
+//          );
+};
+
+
+/////////////////////////////////////// VIEW Role  ////////////////
+const viewRole = () => {
+    inquirer
+    .prompt([
+      {
+        name: 'id',
+        type: 'input',
+        message: "What is the id of the role to be viewed?",
+      }
+    ])
+    .then((answer) => {
+        connection.query(
+// need a more robust search if I am going to list all employees 
+            'SELECT * FROM role WHERE ?',
+            {  id: answer.id }, 
+            (err) => {
+              if (err) throw err;
+//TODO print results
+// role title, salary, department, all employees in that role and the combined salary
+              view();
+            }
+          );
+        });
+
+};
+
+/////////////////////////////////////// VIEW Department  ////////////////
+const viewDepartment = () => {
+    inquirer
+    .prompt([
+      {
+        name: 'id',
+        type: 'input',
+        message: "What is the id of the department to be viewed?",
+      }
+    ])
+    .then((answer) => {
+        connection.query(
+// need a more robust search if I am going to list all employees 
+            'SELECT * FROM department WHERE ?',
+            {  id: answer.id }, 
+            (err) => {
+              if (err) throw err;
+//TODO print results
+// department name, all employees in that department listed in desc order by salary and the combined salary
+              view();
+            }
+          );
+        });
+
+};
 
 
 /////////////////////////////////////////////////////////////////////////
