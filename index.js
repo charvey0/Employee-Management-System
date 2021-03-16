@@ -1,5 +1,6 @@
 const mysql = require('mysql');
 const inquirer = require('inquirer');
+const cTable = require('console.table');
 
 const connection = mysql.createConnection({
   host: 'localhost',
@@ -712,6 +713,17 @@ const viewEmployees = () => {
 };
 
 const viewEmployeeByDepartment = () => {
+
+    console.table([
+        {
+          name: 'foo',
+          age: 10
+        }, {
+          name: 'bar',
+          age: 20
+        }
+      ]);
+      
 //    connection.query(
 // need a more robust search if I am going to list all employees 
 //        'SELECT * FROM employee',
@@ -726,31 +738,44 @@ view();
 };
 
 const viewEmployeeByManager = () => {
-//    connection.query(
+    connection.query(
 // need a more robust search if I am going to list all employees 
-//        'SELECT * FROM employee',
-//            {  id: answer.id }, 
-//            (err) => {
-//              if (err) throw err;
+        'SELECT * FROM employee WHERE ? ORDER BY last_name',
+            {  is_manager: true }, 
+            (err, res) => {
+              if (err) throw err;
 //TODO print results
 // role title, salary, department, all employees in that role and the combined salary
-view();
-//            }
-//          );
+                res.forEach((manager) => {
+showTeam(manager.id, manager.last_name, manager.first_name);
+                });
+                view();
+            }
+          );
 };
 
+const showTeam = (id, last, first) => {
+    connection.query('SELECT first_name, last_name FROM employee WHERE ? ORDER BY last_name',
+            { manager_id: id},
+            (err, res) => {
+                if (err) throw err;
+                console.table(`MANAGER: ${last}, ${first}`, res);
+            });
+};
+
+
 const viewEmployeeByLastName = () => {
-//    connection.query(
+    connection.query(
 // need a more robust search if I am going to list all employees 
-//        'SELECT * FROM employee',
-//            {  id: answer.id }, 
-//            (err) => {
-//              if (err) throw err;
+        'SELECT * FROM employee ORDER BY last_name',
+            (err, res) => {
+              if (err) throw err;
 //TODO print results
 // role title, salary, department, all employees in that role and the combined salary
-              view();
-//            }
-//          );
+console.table(res);
+view();
+            }
+          );
 };
 
 
