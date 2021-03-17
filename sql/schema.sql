@@ -14,7 +14,7 @@ CREATE TABLE Role (
   id INT NOT NULL AUTO_INCREMENT,
   title VARCHAR(30),
   salary decimal,
-  is_management BOOL,
+  is_management VARCHAR(3),
   department_id INT,
   PRIMARY KEY (id),
   FOREIGN KEY (department_id) REFERENCES Department(id)
@@ -24,7 +24,7 @@ CREATE TABLE Employee (
   id INT NOT NULL AUTO_INCREMENT,
   first_name VARCHAR(30) NULL,
   last_name VARCHAR(30) NULL,
-  is_manager BOOL,
+  is_manager VARCHAR(3),
   role_id INT,
   manager_id INT,
   PRIMARY KEY (id),

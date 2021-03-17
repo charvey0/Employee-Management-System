@@ -1,4 +1,4 @@
-const mysql = require('mysql');
+const mysql = require('mysql2');
 const inquirer = require('inquirer');
 require('dotenv').config();
 const cTable = require('console.table');
@@ -84,8 +84,8 @@ const createEmployee = () => {
       {
         name: 'is_manager',
         type: 'list',
-        message: "Is the employee a manager? (1='Yes'; 0='NO')",
-        choices: ["1","0"]
+        message: "Is this employee a manager?",
+        choices: ["YES","NO"]
       },
       {
         name: 'role_id',
@@ -134,8 +134,8 @@ const createRole = () => {
       {
         name: 'is_management',
         type: 'list',
-        message: "Is this role a managing role? (1 for 'YES'; 0 for 'NO'",
-        choices: [1, 0],
+        message: "Is this role a managing role?",
+        choices: ["YES", "NO"],
       },
       {
         name: 'department_id',
@@ -342,7 +342,7 @@ const updateEmployeeMenu = (id) => {
       name: 'update',
       type: 'list',
       message: 'What would you like to update?',
-      choices: ['[FIRST NAME]', '[LAST NAME]', '[IS_MANAGER?]', '[ROLE ID]', '[MANAGER ID]', 'Go back to the main menu'],
+      choices: ['[FIRST NAME]', '[LAST NAME]', '[IS MANAGER]', '[ROLE ID]', '[MANAGER ID]', 'Go back to the main menu'],
     })
     .then((ans) => {
         switch (ans.update) {
@@ -352,7 +352,7 @@ const updateEmployeeMenu = (id) => {
             case '[LAST NAME]':
                 updateEmployeeLastName(id);
                 break;
-            case '[IS_MANAGER?]':
+            case '[IS MANAGER]':
                 updateEmployeeIsManager(id);
                 break;
             case '[ROLE ID]':
@@ -413,28 +413,31 @@ const updateEmployeeLastName = (id) => {
     });
 };
 
+
 const updateEmployeeIsManager = (id) => {
-    inquirer
-    .prompt([
-      {
-        name: 'is_manager',
-        type: 'input',
-        message: "Is the employee a manager? (1='YES'; 0='NO')",
+  inquirer
+  .prompt([
+    {
+      name: 'is_manager',
+      type: 'list',
+      message: "Is this employee a manager?",
+      choices: ["YES","NO"]
+    }
+  ])
+  .then((answer) => {
+    connection.query(
+      'UPDATE employee SET ? WHERE ?',
+      [{  is_manager: answer.is_manager }, 
+       { id: id }],
+      (err) => {
+        if (err) throw err;
+        console.log("The employee's manager status was successfully updated.");
+        updateEmployeeMenu(id);
       }
-    ])
-    .then((answer) => {
-      connection.query(
-        'UPDATE employee SET ? WHERE ?',
-        [{  is_manager: answer.is_manager }, 
-         { id: id }],
-        (err) => {
-          if (err) throw err;
-          console.log("The employee's manager flag was successfully updated.");
-          updateEmployeeMenu(id);
-        }
-      );
-    });
+    );
+  });
 };
+
 
 const updateEmployeeRole = (id) => {
     inquirer
@@ -582,8 +585,8 @@ const updateRoleIsManagement = (id) => {
       {
         name: 'is_management',
         type: 'list',
-        message: "Is this role a management role? (1=YES; 0=NO)",
-        choices: ["1","0"]
+        message: "Is this role a management role?",
+        choices: ["YES","NO"]
       }
     ])
     .then((answer) => {
@@ -633,9 +636,9 @@ const updateDepartment = () => {
     inquirer
     .prompt([
       {
-        name: 'old_name',
+        name: 'id',
         type: 'input',
-        message: "What is the current name of the department?",
+        message: "What is the id of the department?",
       },
       {
         name: 'new_name',
@@ -647,7 +650,7 @@ const updateDepartment = () => {
       connection.query(
         'UPDATE department SET ? WHERE ?',
         [{  name: answer.new_name }, 
-         { name: answer.old_name }],
+         { id: answer.id }],
         (err) => {
           if (err) throw err;
           console.log('The department was successfully updated.');
@@ -668,17 +671,23 @@ const view = () => {
       name: 'view',
       type: 'list',
       message: 'What would you like to view?',
-      choices: ['[EMPLOYEES]', '[ROLE]', '[DEPARTMENT]', 'Go back to the main menu'],
+      choices: ['[EMPLOYEES]', '[ALL ROLES]', '[ROLE BY ID]', '[ALL DEPARTMENTS]', '[DEPARTMENT BY ID]', 'Go back to the main menu'],
     })
     .then((ans) => {
         switch (ans.view) {
             case '[EMPLOYEES]':
                 viewEmployees();
                 break;
-            case '[ROLE]':
+            case '[ALL ROLES]':
+                viewRoles();
+                break;
+            case '[ROLE BY ID]':
                 viewRole();
                 break;
-            case '[DEPARTMENT]':
+            case '[ALL DEPARTMENTS]':
+                viewDepartments();
+                break;
+            case '[DEPARTMENT BY ID]':
                 viewDepartment();
                 break;
             default:
@@ -716,65 +725,78 @@ const viewEmployees = () => {
 
 const viewEmployeeByDepartment = () => {
 
-    console.table([
-        {
-          name: 'foo',
-          age: 10
-        }, {
-          name: 'bar',
-          age: 20
-        }
-      ]);
-      
-//    connection.query(
-// need a more robust search if I am going to list all employees 
-//        'SELECT * FROM employee',
-//            {  id: answer.id }, 
-//            (err) => {
-//              if (err) throw err;
-//TODO print results
-// role title, salary, department, all employees in that role and the combined salary
-view();
-//            }
-//          );
-};
+    connection.query(
+        'SELECT * FROM department',
+            (err, departments) => {
+                if (err) throw err;
+                departments.forEach((department) => {
+                    connection.query('SELECT id FROM role WHERE ?',
+                        { department_id: department.id },
+                        (err, roles) => {
+                            if (err) throw err;
+                            let q = 'SELECT id, first_name, last_name FROM employee WHERE ';
+                            let count = 0;
+                            roles.forEach((role) => {
+                                if (count > 0) {
+                                  q += " OR ";
+                                }
+                                count++;
+                                q += " role_id = "+role.id;
+                            });    
+                            q += " ORDER BY last_name";
+                            connection.query(q ,
+                            (err, employees) => {
+                                if (err) throw err;
+                              console.log(`
+__________________________________
+DEPARTMENT: `+department.name);
+                                employees.forEach(emp => {
+                                  console.log(emp.id+" "+emp.first_name+" "+emp.last_name);
+                                });
+                            });
+                        });
+                    });
+              view();
+          });
+}
 
 const viewEmployeeByManager = () => {
     connection.query(
-// need a more robust search if I am going to list all employees 
-        'SELECT * FROM employee WHERE ? ORDER BY last_name',
-            {  is_manager: true }, 
+        'SELECT id, first_name, last_name FROM employee WHERE ? ORDER BY last_name',
+          { is_manager: "YES" },
             (err, res) => {
               if (err) throw err;
-//TODO print results
-// role title, salary, department, all employees in that role and the combined salary
-                res.forEach((manager) => {
-showTeam(manager.id, manager.last_name, manager.first_name);
-                });
-                view();
-            }
-          );
-};
+              res.forEach(manager => {
+              connection.query(
+                    'SELECT id, first_name, last_name FROM employee WHERE ? ORDER BY last_name',
+                    { manager_id: manager.id},
+                    (err, resp) => {
+                        if (err) throw err;
+                        console.log(`
 
-const showTeam = (id, last, first) => {
-    connection.query('SELECT first_name, last_name FROM employee WHERE ? ORDER BY last_name',
-            { manager_id: id},
-            (err, res) => {
-                if (err) throw err;
-                console.table(`MANAGER: ${last}, ${first}`, res);
+MANAGER: ${manager.first_name} ${manager.last_name}
+-----------------------------------------------------`);
+                        
+                        resp.forEach(emp => {
+                          console.log(emp.id+" "+emp.first_name+" "+emp.last_name);
+                        });
+                    }
+              );    
             });
-};
+            view();
+          });
+        }
 
 
 const viewEmployeeByLastName = () => {
     connection.query(
-// need a more robust search if I am going to list all employees 
         'SELECT * FROM employee ORDER BY last_name',
             (err, res) => {
               if (err) throw err;
 //TODO print results
 // role title, salary, department, all employees in that role and the combined salary
-console.table(res);
+console.table(`
+`,res);
 view();
             }
           );
@@ -793,46 +815,73 @@ const viewRole = () => {
     ])
     .then((answer) => {
         connection.query(
-// need a more robust search if I am going to list all employees 
-            'SELECT * FROM role WHERE ?',
+            'SELECT * FROM employee INNER JOIN role ON role.id=employee.role_id',
             {  id: answer.id }, 
-            (err) => {
-              if (err) throw err;
-//TODO print results
-// role title, salary, department, all employees in that role and the combined salary
-              view();
-            }
-          );
-        });
+            (err, res) => {
+                if (err) throw err;
+                connection.query(
+                    'SELECT * FROM role WHERE ?',
+                    {  id: answer.id }, 
+                    (err, res) => {
+                        if (err) throw err;
+                        console.table(`
 
+`,res);
+            });
+            view();
+        });
+    });
+        
 };
+
+const viewRoles = () => {
+  connection.query(
+    'SELECT * FROM role',
+    (err, res) => {
+      if (err) throw err;
+      console.table(res);
+      view();    
+    }
+  );
+};
+
+
 
 /////////////////////////////////////// VIEW Department  ////////////////
-const viewDepartment = () => {
-    inquirer
-    .prompt([
-      {
-        name: 'id',
-        type: 'input',
-        message: "What is the id of the department to be viewed?",
+const viewDepartments = () => {
+    connection.query(
+      'SELECT * FROM department',
+      (err, res) => {
+        if (err) throw err;
+        console.table(res);
+        view();
       }
-    ])
-    .then((answer) => {
-        connection.query(
-// need a more robust search if I am going to list all employees 
-            'SELECT * FROM department WHERE ?',
-            {  id: answer.id }, 
-            (err) => {
-              if (err) throw err;
-//TODO print results
-// department name, all employees in that department listed in desc order by salary and the combined salary
-              view();
-            }
-          );
-        });
-
+    );
 };
 
+
+const viewDepartment = () => {
+  inquirer
+  .prompt([
+    {
+      name: 'id',
+      type: 'input',
+      message: "What is the id of the department to be viewed?",
+    }
+  ])
+  .then((answer) => {
+      connection.query(
+          'SELECT * FROM department WHERE ?',
+          {  id: answer.id }, 
+          (err, res) => {
+              if (err) throw err;
+              console.table(`
+
+              `,res);
+          });
+          view();
+      });
+};
 
 /////////////////////////////////////////////////////////////////////////
 connection.connect((err) => {

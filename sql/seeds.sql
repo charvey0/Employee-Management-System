@@ -1,31 +1,31 @@
 USE employee_db;
 
 INSERT INTO Department (name) 
-VALUES ("Department 1"), 
-("Department 2"), 
-("Department 3");
+VALUES ("Production"), 
+("Sales"), 
+("Maintenence");
 
 INSERT INTO Role (title, salary, is_management, department_id) 
-VALUES ("Role 1 of D1", 10000, FALSE, 1), 
-("Role 2 of D1", 20000, FALSE, 1), 
-("Role 3 of D1", 30000, TRUE, 1), 
-("Role 1 of D2", 10000, FALSE, 2), 
-("Role 2 of D2", 20000, FALSE, 2), 
-("Role 3 of D2", 30000, TRUE, 2), 
-("Role 1 of D3", 10000, FALSE, 3), 
-("Role 2 of D3", 20000, FALSE, 3), 
-("Role 3 of D3", 30000, TRUE, 3);
+VALUES ("Production Level 1", 40000, "NO", 1), 
+("Production Level 2", 45000, "NO", 1), 
+("Production Manager", 60000, "YES", 1), 
+("Sales Associate Level 1", 30000, "NO", 2), 
+("Sales Associate Level 2", 45000, "NO", 2), 
+("Sales Lead Associate", 60000, "YES", 2), 
+("Maintenence Level 1", 30000, "NO", 3), 
+("Maintenence Level 2", 40000, "NO", 3), 
+("Maintenence Supervisor", 50000, "YES", 3);
 
 INSERT INTO Employee (first_name, last_name, is_manager, role_id)
- VALUES ("A", "A", FALSE, 1),
- ("B", "B", FALSE, 2),
- ("C", "C", TRUE, 3),
- ("D", "D", FALSE, 4),
- ("E", "E", FALSE, 5),
- ("F", "F", TRUE, 6),
- ("G", "G", FALSE, 7),
- ("H", "H", FALSE, 8),
- ("I", "I", TRUE, 9);
+ VALUES ("Alan", "Anderson", "NO", 1),
+ ("Beatrix", "Bloomfeld", "NO", 2),
+ ("Catherine", "Cox", "YES", 3),
+ ("Daniel", "Dent", "NO", 4),
+ ("Evelyn", "Eastman", "NO", 5),
+ ("Frank", "Fast", "YES", 6),
+ ("Gina", "Goodman", "NO", 7),
+ ("Henry", "Hightower", "NO", 8),
+ ("Irma", "Ipifiano", "YES", 9);
 
 UPDATE Employee SET manager_id=3 WHERE id=1;
 UPDATE Employee SET manager_id=3 WHERE id=2;
