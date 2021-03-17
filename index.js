@@ -756,9 +756,9 @@ DEPARTMENT: `+department.name);
                             });
                         });
                     });
-              view();
-          });
-}
+                    view();
+            });
+};
 
 const viewEmployeeByManager = () => {
     connection.query(
@@ -785,7 +785,7 @@ MANAGER: ${manager.first_name} ${manager.last_name}
             });
             view();
           });
-        }
+        };
 
 
 const viewEmployeeByLastName = () => {
